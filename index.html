@@ -19,7 +19,11 @@
   <!-- vConsole の読み込みと初期化（スマホ実機でのログ確認用） -->
   <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
   <script>
-    var vConsole = new window.VConsole();
+    document.addEventListener("DOMContentLoaded", function() {
+      if (typeof window.VConsole !== 'undefined') {
+        window.vConsole = new window.VConsole();
+      }
+    });
   </script>
 
   <!-- プレミアムなデザインのためのGoogle Fonts -->
@@ -317,12 +321,19 @@
       })
       .then(response => response.text())
       .then(result => {
-        alert('日報を申請しました！');
-        // WOFFアプリを閉じる
-        if (typeof woff !== 'undefined' && woff.isInClient && woff.isInClient()) {
-          woff.closeWindow();
+        if (result.indexOf('Error') !== -1) {
+          console.error('GAS Error:', result);
+          alert('システムエラーが発生しました（Bot通知失敗）。ログを確認してください。\n' + result);
+          submitBtn.disabled = false;
+          submitBtn.innerText = '日報を申請して閉じる';
         } else {
-            submitBtn.innerText = '送信完了';
+          alert('日報を申請しました！');
+          // WOFFアプリを閉じる
+          if (typeof woff !== 'undefined' && woff.isInClient && woff.isInClient()) {
+            woff.closeWindow();
+          } else {
+              submitBtn.innerText = '送信完了';
+          }
         }
       })
       .catch(error => {
